@@ -1,0 +1,30 @@
+package rules;
+import facts.RiskAssessment;
+import model.RiskFactor;
+dialect  "mvel"
+
+rule "High smoking risk"
+salience 1000
+    when RiskFactor (smoker==true)
+    then RiskAssessment riskAssessment=new RiskAssessment();
+    riskAssessment.setHighSmokingRisk(true);
+    insert(riskAssessment);
+end
+
+rule "Occupational exposure risk"
+salience 950
+    when RiskFactor (occupationalExposure==true)
+    then RiskAssessment riskAssessment=new RiskAssessment();
+    riskAssessment.setOccupationalRisk(true);
+    insert(riskAssessment);
+end
+
+rule "Chronic disease infection risk"
+salience 900
+    when RiskFactor ( hasChronicDisease==true)
+    then RiskAssessment riskAssessment=new RiskAssessment();
+    riskAssessment.setInfectionRisk(true);
+    insert(riskAssessment);
+end
+
+

@@ -1,4 +1,4 @@
-package blocks;
+package facts;
 
 public class PhysiologicalPattern {
 

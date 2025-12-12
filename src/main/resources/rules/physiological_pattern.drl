@@ -1,0 +1,43 @@
+package rules;
+import model.Physiology
+import facts.PhysiologicalPattern;
+dialect  "mvel"
+
+rule "Severe respiratory failure"
+salience 550
+    when Physiology (oxygenSaturation<88 || respiratoryRate>30)
+    then PhysiologicalPattern physiologicalPattern=new PhysiologicalPattern();
+    physiologicalPattern.setSevereRespiratoryFailure(true);
+    insert(physiologicalPattern);
+end
+
+rule "Low oxygen levels"
+salience 400
+    when Physiology (oxygenSaturation>=88, oxygenSaturation<92)
+    then PhysiologicalPattern physiologicalPattern=new PhysiologicalPattern();
+    physiologicalPattern.setLowOxygenLevels(true);
+    insert(physiologicalPattern);
+end
+
+rule "Breathing obstruction"
+salience 350
+    when Physiology (fev1FvcRatio<0.7)
+    then PhysiologicalPattern physiologicalPattern=new PhysiologicalPattern();
+    physiologicalPattern.setAirflowObstruction(true);
+    insert(physiologicalPattern);
+end
+
+rule "Restrictive lung pattern"
+salience 300
+    when Physiology (fev1FvcRatio>=0.7,respiratoryRate>20)
+    then PhysiologicalPattern physiologicalPattern=new PhysiologicalPattern();
+    physiologicalPattern.setRestrictivePattern(true);
+    insert(physiologicalPattern);
+end
+
+rule "Fever" //reinforce other patterns
+salience 250
+    when Physiology (bodyTemperature>=38.0)
+    then PhysiologicalPattern physiologicalPattern=new PhysiologicalPattern();
+    insert(physiologicalPattern);
+end

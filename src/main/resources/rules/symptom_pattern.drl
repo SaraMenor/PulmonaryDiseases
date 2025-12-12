@@ -1,0 +1,37 @@
+package rules;
+import facts.SymptomPattern;
+import model.Symptom
+dialect  "mvel"
+
+rule "Obstructive symptom pattern"
+salience 800
+    when Symptom ( wheezing==true, dyspnea==true)
+    then SymptomPattern symptomPattern=new SymptomPattern();
+    symptomPattern.setObstructivePattern(true);
+    insert(symptomPattern);
+end
+
+rule "Infectious symptom pattern"
+salience 750
+    when Symptom ( cough==true, fever==true)
+    then SymptomPattern symptomPattern=new SymptomPattern();
+    symptomPattern.setInfectiousPattern(true);
+    insert(symptomPattern);
+end
+
+rule "Interstitial symptom pattern"
+salience 700
+    when Symptom ( dryCough==true, dyspnea==true)
+    then SymptomPattern symptomPattern=new SymptomPattern();
+    symptomPattern.setInterstitialPattern(true);
+    insert(symptomPattern);
+end
+
+rule "Neoplastic symptom pattern"
+salience 650
+    when Symptom ( hemoptysis==true, weightLoss==true)
+    then SymptomPattern symptomPattern=new SymptomPattern();
+    symptomPattern.setNeoplasticPattern(true);
+    insert(symptomPattern);
+end
+

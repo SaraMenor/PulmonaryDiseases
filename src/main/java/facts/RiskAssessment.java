@@ -1,11 +1,11 @@
-package blocks;
+package facts;
 
-public class RiskAssesment {
+public class RiskAssessment {
     private boolean highSmokingRisk;
     private boolean occupationalRisk;
     private boolean infectionRisk;
 
-    public RiskAssesment() {
+    public RiskAssessment() {
     }
     public boolean isHighSmokingRisk() {
         return highSmokingRisk;
@@ -27,7 +27,7 @@ public class RiskAssesment {
         return infectionRisk;
     }
 
-    public void setInfectionRisk(boolean increasedInfectionRisk) {
+    public void setInfectionRisk(boolean infectionRisk) {
         this.infectionRisk = infectionRisk;
     }
 }
