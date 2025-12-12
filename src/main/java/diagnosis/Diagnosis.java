@@ -1,21 +1,24 @@
-package pojos;
+package diagnosis;
 
 public class Diagnosis {
 
-    private String name;
+    private String disease;
     private String medicalExplanation;
 
+    public Diagnosis() {
+    }
+
     public Diagnosis(String name, String medicalExplanation) {
-        this.name = name;
+        this.disease = name;
         this.medicalExplanation = medicalExplanation;
     }
 
     public String getName() {
-        return name;
+        return disease;
     }
 
     public void setName(String name) {
-        this.name = name;
+        this.disease = name;
     }
 
     public String getMedicalExplanation() {
@@ -26,8 +29,4 @@ public class Diagnosis {
         this.medicalExplanation = medicalExplanation;
     }
 
-    @Override
-    public String toString() {
-        return "Diagnosis: " + name + " (" + medicalExplanation + ")";
-    }
 }
