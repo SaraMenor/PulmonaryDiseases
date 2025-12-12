@@ -1,0 +1,208 @@
+package rules
+
+import pojos.Patient
+import pojos.Gender
+import pojos.Symptom
+import pojos.MedicalHistory
+import pojos.OtherDiseases
+import pojos.SymptomType
+import pojos.Diagnosis
+
+
+//RISK ASSESSMENT
+rule "TEST - Patient detected in risk-assessment"
+agenda-group "risk-assessment"
+when
+    Patient( age > 0 )
+then
+    System.out.println("[RISK-ASSESSMENT] Patient detected. Drools is running correctly.");
+end
+
+
+// SYMPTOM ANALYSIS
+rule "TEST - Symptom analysis reached"
+agenda-group "symptom-analysis"
+when
+    Patient( )
+then
+    System.out.println("[SYMPTOM-ANALYSIS] Symptom phase OK.");
+end
+
+
+// PHYSIOLOGY CHECK
+rule "TEST - Physiology check reached"
+agenda-group "physiology-check"
+when
+    Patient( )
+then
+    System.out.println("[PHYSIOLOGY-CHECK] Physiology phase OK.");
+end
+
+
+// DIAGNOSIS PHASE
+rule "TEST - Diagnosis group triggered"
+agenda-group "diagnosis"
+when
+    Patient( )
+then
+    System.out.println("[DIAGNOSIS] Diagnosis phase reached successfully.");
+end
+
+
+rule "Asthma"
+agenda-group "diagnosis"
+when
+    $p: Patient (age<50, smoker==false)
+    Symptom (type==SymptomType.WHEEZING, present==true)
+    Symptom (type==SymptomType.SHORTNESS_OF_BREATH, present==true)
+    Symptom (type==SymptomType.COUGH, present==true)
+    MedicalHistory(fev1Fvc==null||fev1Fvc>=0.70) //differenciate from COPD
+then
+    insert(new Diagnosis(
+            "Asthma",
+            "Episodic wheezing, dyspnea and cough in a younger non-smoker with no "
+            + "fixed obstruction (FEV1/FVC ≥ 0.70) is highly suggestive of asthma."
+    ));
+    System.out.println("[DIAGNOSIS] Asthma rule fired.");
+end
+
+
+rule "COPD"
+agenda-group "diagnosis"
+when
+    $p: Patient (age>=40, smoker==true)
+    Symptom (type==SymptomType.PRODUCTIVE_COUGH, present==true)
+    Symptom (type==SymptomType.SHORTNESS_OF_BREATH, present==true)
+    Symptom (type==SymptomType.WHEEZING, present==true)
+    MedicalHistory(fev1Fvc!=null||fev1Fvc<0.70) //differenciate from COPD
+then
+    insert(new Diagnosis(
+            "COPD",
+            "Chronic productive cough, dyspnea and wheezing in a smoker aged>=40 "
+            + "with FEV1/FVC < 0.70 is consistent with COPD."
+    ));
+    System.out.println("[DIAGNOSIS] COPD rule fired.");
+end
+
+
+rule "Chronic bronchitis"
+agenda-group "diagnosis"
+when
+    $p: Patient (smoker==true, otherDiseases contains OtherDiseases.COPD)
+    Symptom (type==SymptomType.PRODUCTIVE_COUGH, present==true)
+then
+    insert(new Diagnosis(
+            "Chronic bronchitis",
+            "History of COPD with persistent productive cough suggests a chronic bronchitis "
+    ));
+    System.out.println("[DIAGNOSIS] Chronic bronchitis rule fired.");
+end
+
+
+rule "Bronchiectasis"
+agenda-group "diagnosis"
+when
+    $p: Patient (otherDiseases contains OtherDiseases.COPD || otherDiseases contains OtherDiseases.TB_HISTORY)
+    Symptom (type==SymptomType.PRODUCTIVE_COUGH, present==true)
+    Symptom (type==SymptomType.HEMOPTYSIS, present==true)
+then
+    insert(new Diagnosis(
+            "Bronchiectasis",
+            "Heavy sputum production and hemoptysis in a patient with structural lung damage suggests bronchiectasis."
+    ));
+    System.out.println("[DIAGNOSIS] Bronchiectasis rule fired.");
+end
+
+
+rule "ILD/IPF"
+agenda-group "diagnosis"
+when
+    $p: Patient (smoker==false)
+    Symptom (type==SymptomType.DRY_COUGH, present==true)
+    Symptom (type==SymptomType.SHORTNESS_OF_BREATH, present==true)
+        Symptom (type==SymptomType.FATIGUE, present==true)
+then
+    insert(new Diagnosis(
+            "Interstitial Lung disease (IPF) ",
+            "Dry cough, progressive dyspnea and fatigue in a non-smoker suggest a fibrosing interstitial lung disease."
+    ));
+    System.out.println("[DIAGNOSIS] ILD/IPF rule fired.");
+end
+
+
+rule "Pneumonia"
+agenda-group "diagnosis"
+when
+    Symptom (type==SymptomType.COUGH, present==true)
+    Symptom (type==SymptomType.FEVER, present==true)
+    Symptom (type==SymptomType.CHEST_PAIN, present==true)
+    Symptom (type==SymptomType.SHORTNESS_OF_BREATH, present==true)
+    MedicalHistory( (temperature!=null && temperature>=38.0) || (respiratoryRate!= null && respiratoryRate>=20))
+then
+    insert(new Diagnosis(
+            "Pneumonia",
+            "Acute cough, fever, pleuritic pain and dyspnea with fever/tachypnea strongly indicate pneumonia."
+    ));
+    System.out.println("[DIAGNOSIS] Pneumonia rule fired.");
+end
+
+rule "Lung cancer"
+agenda-group "diagnosis"
+when
+    $p: Patient(age>=50, smoker==true)
+    Symptom (type==SymptomType.COUGH, present==true)
+    Symptom (type==SymptomType.HEMOPTYSIS, present==true)
+    Symptom (type==SymptomType.WEIGHT_LOSS, present==true)
+
+then
+    insert(new Diagnosis(
+            "Suspected lung cancer",
+            "Persistent cough, hemoptysis and weight loss in an older smoker raise strong suspicion of lung cancer."
+    ));
+    System.out.println("[DIAGNOSIS] lung cancer rule fired.");
+end
+
+
+
+rule "NTM - Non-tuberculous Mycobacteria"
+agenda-group "diagnosis"
+when
+    $p: Patient(otherDiseases contains OtherDiseases.BRONCHIECTASIS || otherDiseases contains OtherDiseases.COPD)
+    Symptom (type==SymptomType.COUGH, present==true)
+    Symptom (type==SymptomType.FATIGUE, present==true)
+    Symptom (type==SymptomType.WEIGHT_LOSS, present==true)
+
+then
+    insert(new Diagnosis(
+            "NTM Lung Disease",
+            "Chronic cough, fatigue and weight loss in a patient with underlying bronchiectasis/COPD suggest NTM infection."
+    ));
+    System.out.println("[DIAGNOSIS] NTM rule fired.");
+end
+
+
+rule "Silicosis/Asbestosis"
+agenda-group "diagnosis"
+when
+    $p: Patient( occupation != null &&
+                          ( occupation.matches("(?i).*construction.*") ||
+                            occupation.matches("(?i).*mining.*") ||
+                            occupation.matches("(?i).*factory.*") ||
+                            occupation.matches("(?i).*stone.*") ||
+                            occupation.matches("(?i).*asbestos.*") ||
+                            occupation.matches("(?i).*silica.*") ) )
+    Symptom (type==SymptomType.COUGH, present==true)
+    Symptom (type==SymptomType.SHORTNESS_OF_BREATH, present==true)
+
+then
+    insert(new Diagnosis(
+            "Silicosis/Asbestosis",
+            "Chronic cough and dyspnea in a patient with significant exposure to "
+            + "construction/mining/asbestos/silica suggest occupational pulmonary fibrosis."
+    ));
+    System.out.println("[DIAGNOSIS]  Occupational fibrosis (Silicosis/Asbestosis) rule fired.");
+end
+
+
+
+
